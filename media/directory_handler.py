@@ -47,11 +47,18 @@ class DirectoryHandler:
                             file_type = classify_file(key)
                         if not obj["Key"][0] == "/":
                             key = "/" + key
-                        File.objects.create(name=part, folder=current_parent, url=f"https://sillymediabucket.s3.eu-north-1.amazonaws.com{key}", type=file_type)
+                        File.objects.create(
+                            name=part,
+                            folder=current_parent,
+                            url=f"https://sillymediabucket.s3.eu-north-1.amazonaws.com{key}",
+                            thumb=f"https://sillythumbs.s3.eu-north-1.amazonaws.com{key}.png",
+                            type=file_type
+                        )
                     else:  # Parts before the last are folders
                         folder, created = Folder.objects.get_or_create(name=part, parent=current_parent)
                         current_parent = folder
         print("Fetched folders and files from S3")
+
 
 
     def create_tree(self, object_keys):

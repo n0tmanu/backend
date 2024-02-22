@@ -17,6 +17,7 @@ class File(models.Model):
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, related_name='files')
     type = models.CharField(max_length=255)
     url = models.CharField(max_length=255)
+    thumb = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
