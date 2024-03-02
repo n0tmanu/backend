@@ -16,7 +16,6 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -27,7 +26,6 @@ SECRET_KEY = 'django-insecure-psbs+mn-(topbp!%x&%$4mv9%$42qa85zgh4eb(9j^eebqh(6t
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -40,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken'
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +74,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -86,7 +83,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -106,7 +102,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -118,7 +113,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
@@ -129,33 +123,21 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Adjust this to match your React frontend's URL
+    'http://localhost:3000',
     'http://127.0.0.1:3000',
+    # 'http://16.170.186.238:80'
     # Add other origins as needed
 ]
 
+# CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
-# AWS Credentials
-AWS_ACCESS_KEY_ID = 'AKIA47CR25CM23ODLFFW'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_S3_REGION_NAME = 'eu-north-1'
-AWS_STORAGE_BUCKET_NAME = 'sillymediabucket'
-custom_domain = 'https://sillymediabucket.s3.eu-north-1.amazonaws.com/'
-AWS_BUCKET = "sillymediabucket"
-THUMB_BUCKET = "sillythumbs"
-AWS_S3_SIGNATURE_VERSION = 's3v4'
+# Bunny Settings
+BUNNY_API_KEY = "bc2bd1ff-ffc7-4348-8afe8dec4344-51b9-465f"
+BUNNY_STORAGE_ZONE_NAME = "silly-media"
+BUNNY_STORAGE_ZONE_REGION = "se"
 
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-        'LOCATION': '127.0.0.1:11211',  # Adjust hostname and port if needed
-    }
-}
-
-
-cache_expire = timedelta(minutes=1)
-
+TELETHON_BOT_TOKEN = "6576938094:AAEj86t31qH1oiBwccpUvCTsTpXOBpMjj2M"
+TELEGRAM_API_ID = "2813091"
+TELEGRAM_API_HASH = "afed039a8fa0870e1bf0ca9638b93d60"

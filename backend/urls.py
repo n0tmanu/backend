@@ -17,11 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from authentication.views import login, test_token
-from media.views import media
+from media.views import media, telegram, database
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', login),
     path('test_token/', test_token),
-    path('media/', media)
+    path('media/', media),
+    path('telegram/', telegram),
+    path('database/', database)
 ]

@@ -1,16 +1,12 @@
-"""
-ASGI config for backend project.
-
-It exposes the ASGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/5.0/howto/deployment/asgi/
-"""
-
-import os
-
+import asyncio
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+# Set up the event loop
+asyncio.set_event_loop(asyncio.new_event_loop())
 
-application = get_asgi_application()
+# Get the ASGI application
+django_asgi_app = get_asgi_application()
+
+# Run the ASGI application
+def application(scope, receive, send):
+    return django_asgi_app(scope, receive, send)

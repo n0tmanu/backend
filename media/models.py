@@ -21,3 +21,7 @@ class File(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Telegram(models.Model):
+    id = models.IntegerField(primary_key=True)
