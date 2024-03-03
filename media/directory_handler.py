@@ -38,7 +38,7 @@ class DirectoryHandler:
                 url = f"https://silly-media-pull-zone.b-cdn.net{path}/{file_name}"
                 thumb = f"https://silly-thumb.b-cdn.net{path}/{file_name}.png"
 
-                File.objects.create(
+                File.objects.get_or_create(
                     name=file_name,
                     folder=parent,
                     url=url,
@@ -54,7 +54,10 @@ class DirectoryHandler:
                 self.save_bunny_objects(storage_objects=objects, path=f"{path}/{folder_name}", parent=folder)
 
         print("Fetched folders and files from Bunny CDN")
-
+        return {
+            "folders": Folder.objects.all().count(),
+            "files": File.objects.all().count()
+        }
 
 
 

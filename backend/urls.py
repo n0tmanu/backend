@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from authentication.views import login, test_token
-from media.views import media, telegram, database
+from media.views import media, telegram, database, edit_page_source
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +25,6 @@ urlpatterns = [
     path('test_token/', test_token),
     path('media/', media),
     path('telegram/', telegram),
-    path('database/', database)
+    path('database/', database),
+    path('telegram-iframe/', edit_page_source)
 ]

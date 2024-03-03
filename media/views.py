@@ -3,6 +3,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
 from .directory_handler import DirectoryHandler
 from backend import settings
 from .models import File, Folder, Telegram
@@ -49,7 +51,7 @@ def telegram(request):
     else:
         add_offset = 0
 
-    limit = 10
+    limit = 5
 
     objects = Telegram.objects.all().order_by('-id')[add_offset:add_offset+limit]
 
@@ -58,16 +60,20 @@ def telegram(request):
     return JsonResponse(
         {
             'ids': message_ids,
-            "offset": add_offset + 10
+            "offset": add_offset + 5
         },
         safe=False
     )
 
 
 def database(request):
-    handler.get_bunny_objects()
+    count = handler.get_bunny_objects()
+    return JsonResponse(
+        count, safe=False
+    )
 
 
+@csrf_exempt
 def edit_page_source(request):
     media_id = request.GET.get('media_id')
 
@@ -93,8 +99,50 @@ def edit_page_source(request):
 
     if element_to_delete:
         element_to_delete.extract()
+
+    script_tag = soup.new_tag("script")
+    script_tag.string = """
+        function sendHeightToParent() {
+            const element = document.querySelector('.tgme_widget_message');
+            if (element) {
+                const elementHeight = element.scrollHeight;
+                window.parent.postMessage({ type: 'message', height: elementHeight }, '*');
+            }
+        }
+
+
+        // Listen for changes in the iframe's content height
+        window.addEventListener('resize', sendHeightToParent);
+
+        // Initial call to send the document height
+        sendHeightToParent();
+    """
+
+    soup.body.append(script_tag)
+
+    response = HttpResponse(str(soup))
+
+    # Set the X-Frame-Options header to allow embedding in iframes from any origin
+    response['X-Frame-Options'] = 'ALLOWALL'
+
+    # Set CORS headers to allow cross-origin requests
+    response['Access-Control-Allow-Origin'] = '*'
+    response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    response['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept'
+
+    return response
+
+
+def have_mutual_elements(class1, class2):
+    # Assuming class1 and class2 are lists or sets of elements
+    set1 = set(class1)
+    set2 = set(class2)
+
+    # Check if there is any common element between set1 and set2
+    common_elements = set1.intersection(set2)
+
+    # If the length of the common elements set is greater than 0, they have mutual elements
+    if len(common_elements) > 0:
+        return True
     else:
-        print(element_to_delete)
-
-    return str(soup)
-
+        return False
