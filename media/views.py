@@ -5,7 +5,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .directory_handler import DirectoryHandler
 from backend import settings
-from .models import File, Folder, Telegram
+from .models import Folder, Telegram
 from .serializers import FolderSerializer, FileSerializer
 from .telegram_handler import TelegramHandler
 

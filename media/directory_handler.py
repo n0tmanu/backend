@@ -1,6 +1,4 @@
-import requests
 from BunnyCDN.Storage import Storage
-from bs4 import BeautifulSoup
 from .models import File, Folder
 import os
 import re
