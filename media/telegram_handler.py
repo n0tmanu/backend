@@ -1,34 +1,31 @@
-import re
-import time
 from asgiref.sync import sync_to_async
-from bs4 import BeautifulSoup
-import requests
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetHistoryRequest
 from backend import settings
 from .models import Telegram
 
-
 class TelegramHandler:
-    def __init__(self, offset):
+    def __init__(self):
         self.channel = None
-        self.messages = []
+        self.client = None
         self.offset = 0
 
-
-
     async def __aiter__(self):
+        """
+        Asynchronous iterator to initialize the TelegramClient.
+        """
         self.client = TelegramClient(
             settings.TELETHON_BOT_TOKEN,
             settings.TELEGRAM_API_ID,
             settings.TELEGRAM_API_HASH,
         )
-
         if not self.client.is_connected():
             await self.client.start()
 
-    async def get_elements(self, offset=0):
-
+    async def get_messages(self, offset=0):
+        """
+        Asynchronously fetches messages from Telegram and creates records in the database.
+        """
         await self.__aiter__()
 
         try:
@@ -50,32 +47,29 @@ class TelegramHandler:
                     if message.grouped_id == group_id:
                         continue
                     group_id = message.grouped_id
-                    await create_telegram_record(message_id=message.id)
+                    status = await create_telegram_record(message_id=message.id)
+                    if not status:
+                        break
 
-            # print(message.id)
             await self.client.disconnect()
-            await self.get_elements(offset+100)
-
-            #     page = self.edit_page_source(message.id)
-            #
-            #     self.messages.append(page)
-            #
-            # return (
-            #     self.messages
-            # )
-
-            return ["true"]
+            await self.get_messages(offset+100)
 
         except Exception as error:
             raise error
         finally:
             await self.client.disconnect()
 
-
-
+        return Telegram.objects.all().count()
 
 @sync_to_async
 def create_telegram_record(message_id):
-    print(message_id)
-    Telegram.objects.create(id=message_id)
-
+    """
+    Asynchronously creates a Telegram record in the database.
+    Returns False if the object already exists, otherwise returns the object.
+    """
+    try:
+        telegram_object, created = Telegram.objects.get_or_create(id=message_id)
+        return telegram_object if created else False
+    except Exception as e:
+        print(f"Error creating Telegram record: {e}")
+        return False

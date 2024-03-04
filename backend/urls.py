@@ -15,9 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from authentication.views import login, test_token
-from media.views import media, telegram, database, edit_page_source
+from media.views import media, telegram, update_database, edit_page_source, update_telegram
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,6 +25,7 @@ urlpatterns = [
     path('test_token/', test_token),
     path('media/', media),
     path('telegram/', telegram),
-    path('database/', database),
-    path('telegram-iframe/', edit_page_source)
+    path('update-database/', update_database),
+    path('telegram-iframe/', edit_page_source),
+    path('update-telegram/', update_telegram)
 ]
