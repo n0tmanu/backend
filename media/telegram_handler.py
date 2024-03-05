@@ -4,15 +4,17 @@ from telethon.tl.functions.messages import GetHistoryRequest
 from backend import settings
 from .models import Telegram
 
+
 class TelegramHandler:
     def __init__(self):
         self.channel = None
         self.client = None
         self.offset = 0
 
-    async def __aiter__(self):
+    async def get_messages(self, offset=0):
+        print(f"Fetching Telegram Messages. Offset - {offset}")
         """
-        Asynchronous iterator to initialize the TelegramClient.
+        Asynchronously fetches messages from Telegram and creates records in the database.
         """
         self.client = TelegramClient(
             settings.TELETHON_BOT_TOKEN,
@@ -21,12 +23,6 @@ class TelegramHandler:
         )
         if not self.client.is_connected():
             await self.client.start()
-
-    async def get_messages(self, offset=0):
-        """
-        Asynchronously fetches messages from Telegram and creates records in the database.
-        """
-        await self.__aiter__()
 
         try:
             self.channel = await self.client.get_entity('hweifbwifjbwjvb')
@@ -48,18 +44,25 @@ class TelegramHandler:
                         continue
                     group_id = message.grouped_id
                     status = await create_telegram_record(message_id=message.id)
-                    if not status:
+                    if status:
+                        break
+
+                else:
+                    status = await create_telegram_record(message_id=message.id)
+                    if status:
                         break
 
             await self.client.disconnect()
-            await self.get_messages(offset+100)
+            if await check_status(posts.messages):
+                await self.get_messages(offset+100)
 
         except Exception as error:
             raise error
         finally:
             await self.client.disconnect()
 
-        return Telegram.objects.all().count()
+        return True
+
 
 @sync_to_async
 def create_telegram_record(message_id):
@@ -69,7 +72,16 @@ def create_telegram_record(message_id):
     """
     try:
         telegram_object, created = Telegram.objects.get_or_create(id=message_id)
+        print(f"Saved Object {message_id}")
         return telegram_object if created else False
     except Exception as e:
         print(f"Error creating Telegram record: {e}")
         return False
+
+
+@sync_to_async
+def check_status(posts):
+    if len(posts) == 0:
+        return False
+    else:
+        return True

@@ -3,12 +3,21 @@ from .models import File, Folder
 import os
 import re
 
+
 class DirectoryHandler:
-    def __init__(self, BUNNY_API_KEY: str, BUNNY_STORAGE_ZONE_NAME: str, BUNNY_STORAGE_ZONE_REGION: str):
+    def __init__(
+            self,
+            BUNNY_API_KEY: str,
+            BUNNY_STORAGE_ZONE_NAME: str,
+            BUNNY_STORAGE_ZONE_REGION: str):
         """
         Initializes the DirectoryHandler with Bunny CDN credentials.
         """
-        self.obj_storage = Storage(BUNNY_API_KEY, BUNNY_STORAGE_ZONE_NAME, BUNNY_STORAGE_ZONE_REGION)
+        self.obj_storage = Storage(
+            BUNNY_API_KEY,
+            BUNNY_STORAGE_ZONE_NAME,
+            BUNNY_STORAGE_ZONE_REGION
+        )
 
     def get_bunny_objects(self):
         """
