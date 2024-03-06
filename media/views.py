@@ -11,8 +11,10 @@ from .telegram_handler import TelegramHandler
 
 # Initialize the DirectoryHandler
 handler = DirectoryHandler(
-    BUNNY_API_KEY=settings.BUNNY_API_KEY,
+    BUNNY_MEDIA_API_KEY=settings.BUNNY_MEDIA_API_KEY,
+    BUNNY_THUMB_API_KEY=settings.BUNNY_THUMB_API_KEY,
     BUNNY_STORAGE_ZONE_NAME=settings.BUNNY_STORAGE_ZONE_NAME,
+    BUNNY_STORAGE_THUMB_ZONE_NAME=settings.BUNNY_STORAGE_THUMB_ZONE_NAME,
     BUNNY_STORAGE_ZONE_REGION=settings.BUNNY_STORAGE_ZONE_REGION
 )
 

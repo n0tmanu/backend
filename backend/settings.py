@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-psbs+mn-(topbp!%x&%$4mv9%$42qa85zgh4eb(9j^eebqh(6t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["159.223.217.120"]
 
 # Application definition
 
@@ -126,10 +126,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    # 'http://16.170.186.238:80'
+    'http://159.223.217.120:80',
+    'http://127.0.0.1:80',
+    'http://localhost:80'
     # Add other origins as needed
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
+# Bunny Settings
+BUNNY_MEDIA_API_KEY = "bc2bd1ff-ffc7-4348-8afe8dec4344-51b9-465f"
+BUNNY_THUMB_API_KEY = "85de3862-39da-4f10-8dc25175b01d-6644-4fc7"
+BUNNY_STORAGE_ZONE_NAME = "silly-media"
+BUNNY_STORAGE_THUMB_ZONE_NAME = "silly-thumb"
+BUNNY_STORAGE_ZONE_REGION = "se"
+
+TELETHON_BOT_TOKEN = "6576938094:AAEj86t31qH1oiBwccpUvCTsTpXOBpMjj2M"
+TELEGRAM_API_ID = "2813091"
+TELEGRAM_API_HASH = "afed039a8fa0870e1bf0ca9638b93d60"

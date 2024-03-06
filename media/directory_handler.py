@@ -2,22 +2,35 @@ from BunnyCDN.Storage import Storage
 from .models import File, Folder
 import os
 import re
+import cv2
+from urllib.parse import quote_plus
+from PIL import Image
 
 
 class DirectoryHandler:
     def __init__(
             self,
-            BUNNY_API_KEY: str,
+            BUNNY_MEDIA_API_KEY: str,
+            BUNNY_THUMB_API_KEY: str,
             BUNNY_STORAGE_ZONE_NAME: str,
+            BUNNY_STORAGE_THUMB_ZONE_NAME: str,
             BUNNY_STORAGE_ZONE_REGION: str):
         """
         Initializes the DirectoryHandler with Bunny CDN credentials.
         """
         self.obj_storage = Storage(
-            BUNNY_API_KEY,
+            BUNNY_MEDIA_API_KEY,
             BUNNY_STORAGE_ZONE_NAME,
             BUNNY_STORAGE_ZONE_REGION
         )
+
+        self.thumb_storage = Storage(
+            BUNNY_THUMB_API_KEY,
+            BUNNY_STORAGE_THUMB_ZONE_NAME,
+            BUNNY_STORAGE_ZONE_REGION
+        )
+
+
 
     def get_bunny_objects(self):
         """
@@ -34,7 +47,6 @@ class DirectoryHandler:
         """
         Recursively saves Bunny CDN objects to the database.
         """
-        print(path)
         for obj in storage_objects:
             if 'File_Name' in obj:
                 # Process file objects
@@ -47,6 +59,7 @@ class DirectoryHandler:
                 url = f"https://silly-media-pull-zone.b-cdn.net{path}/{file_name}"
                 thumb = f"https://silly-thumb.b-cdn.net{path}/{file_name}.png"
                 # Create or update file object
+                self.check_thumbnail(file_name, path)
                 File.objects.get_or_create(
                     name=file_name,
                     folder=parent,
@@ -70,6 +83,38 @@ class DirectoryHandler:
             "files": File.objects.all().count()
         }
 
+    def check_thumbnail(self, file, path):
+
+        if path:
+            storage_path = f"{path}/{file}"
+        else:
+            path = None
+            storage_path = file
+
+        thumb_objects = self.thumb_storage.GetStoragedObjectsList(path)
+        if thumb_objects:
+            for obj in thumb_objects:
+                if "File_Name" in obj and obj['File_Name'] == f"{file}.png":
+                    return True
+
+        self.obj_storage.DownloadFile(storage_path=storage_path)
+
+        file_type = classify_file(file)
+        if file_type == "video":
+            status = extract_first_frame(video_path=file, output_path=f"{file}.png")
+        elif file_type == "image":
+            status = resize_image(input_path=file, output_path=f"{file}.png")
+        else:
+            os.remove(file)
+            return False
+
+        if status:
+            rp = self.thumb_storage.PutFile(storage_path=f"{storage_path}.png", file_name=f"{file}.png")
+            print(rp['status'], f"{file}.png")
+
+            os.remove(f"{file}.png")
+
+
 def classify_file(file_path):
     """
     Classifies the file based on its extension.
@@ -81,4 +126,53 @@ def classify_file(file_path):
     elif re.match(r'\.(mp4|avi|mov|mkv|wmv)$', ext):
         return "video"
     else:
+        return False
+
+
+def extract_first_frame(video_path, output_path):
+    # Open the video file
+    video_capture = cv2.VideoCapture(quote_plus(video_path))
+
+    # Check if the video file is opened successfully
+    if not video_capture.isOpened():
+        print("Error: Unable to open video file.")
+        return False
+
+    # Read the first frame
+    success, frame = video_capture.read()
+
+    # Check if the frame is read successfully
+    if not success:
+        print("Error: Unable to read the first frame.")
+        return False
+
+    frame = cv2.resize(frame, (320, 240))
+
+    # Save the first frame as an image file
+    cv2.imwrite(output_path, frame)
+
+    # Release the video capture object
+    video_capture.release()
+    os.remove(quote_plus(video_path))
+
+    return True
+
+
+def resize_image(input_path, output_path):
+
+    try:
+        # Open the image file
+        image = Image.open(input_path)
+
+        # Resize the image
+        resized_image = image.resize((320, 240))
+
+        # Save the resized image
+        resized_image.save(output_path)
+
+        print("Image resized successfully.")
+        return True
+
+    except Exception as e:
+        print(f"Error resizing image: {str(e)}")
         return False
