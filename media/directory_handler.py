@@ -3,7 +3,7 @@ from .models import File, Folder
 import os
 import re
 import cv2
-from urllib.parse import quote_plus
+from urllib.parse import quote
 from PIL import Image
 
 
@@ -47,6 +47,12 @@ class DirectoryHandler:
         """
         Recursively saves Bunny CDN objects to the database.
         """
+        if not path:
+            thumb_path = None
+        else:
+            thumb_path = path
+        thumb_objects = self.thumb_storage.GetStoragedObjectsList(thumb_path)
+
         for obj in storage_objects:
             if 'File_Name' in obj:
                 # Process file objects
@@ -59,7 +65,7 @@ class DirectoryHandler:
                 url = f"https://silly-media-pull-zone.b-cdn.net{path}/{file_name}"
                 thumb = f"https://silly-thumb.b-cdn.net{path}/{file_name}.png"
                 # Create or update file object
-                self.check_thumbnail(file_name, path)
+                self.check_thumbnail(file_name, path, thumb_objects)
                 File.objects.get_or_create(
                     name=file_name,
                     folder=parent,
@@ -83,7 +89,7 @@ class DirectoryHandler:
             "files": File.objects.all().count()
         }
 
-    def check_thumbnail(self, file, path):
+    def check_thumbnail(self, file, path, thumb_objects):
 
         if path:
             storage_path = f"{path}/{file}"
@@ -91,13 +97,12 @@ class DirectoryHandler:
             path = None
             storage_path = file
 
-        thumb_objects = self.thumb_storage.GetStoragedObjectsList(path)
         if thumb_objects:
             for obj in thumb_objects:
                 if "File_Name" in obj and obj['File_Name'] == f"{file}.png":
                     return True
 
-        self.obj_storage.DownloadFile(storage_path=storage_path)
+        print(self.obj_storage.DownloadFile(storage_path=storage_path)["msg"])
 
         file_type = classify_file(file)
         if file_type == "video":
@@ -112,7 +117,10 @@ class DirectoryHandler:
             rp = self.thumb_storage.PutFile(storage_path=f"{storage_path}.png", file_name=f"{file}.png")
             print(rp['status'], f"{file}.png")
 
-        os.remove(f"{file}.png")
+        try:
+            os.remove(f"{file}.png")
+        except:
+            pass
 
 
 def classify_file(file_path):
@@ -130,11 +138,16 @@ def classify_file(file_path):
 
 
 def extract_first_frame(video_path, output_path):
+
+    if not os.path.exists(video_path):
+        video_path = quote(video_path)
     # Open the video file
-    video_capture = cv2.VideoCapture(quote_plus(video_path))
+    video_capture = cv2.VideoCapture(video_path)
 
     # Check if the video file is opened successfully
     if not video_capture.isOpened():
+        video_capture = cv2.VideoCapture(video_path)
+
         print("Error: Unable to open video file.")
         return False
 
@@ -153,7 +166,7 @@ def extract_first_frame(video_path, output_path):
 
     # Release the video capture object
     video_capture.release()
-    os.remove(quote_plus(video_path))
+    os.remove(video_path)
 
     return True
 
