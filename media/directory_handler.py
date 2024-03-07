@@ -172,6 +172,8 @@ def extract_first_frame(video_path, output_path):
 
 
 def resize_image(input_path, output_path):
+    if not os.path.exists(input_path):
+        input_path = quote(input_path)
 
     try:
         # Open the image file
@@ -184,6 +186,7 @@ def resize_image(input_path, output_path):
         resized_image.save(output_path)
 
         print("Image resized successfully.")
+        os.remove(input_path)
         return True
 
     except Exception as e:
