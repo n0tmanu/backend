@@ -112,7 +112,7 @@ class DirectoryHandler:
             rp = self.thumb_storage.PutFile(storage_path=f"{storage_path}.png", file_name=f"{file}.png")
             print(rp['status'], f"{file}.png")
 
-            os.remove(f"{file}.png")
+        os.remove(f"{file}.png")
 
 
 def classify_file(file_path):
