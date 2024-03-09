@@ -186,7 +186,10 @@ def resize_image(input_path, output_path):
         resized_image.save(output_path)
 
         print("Image resized successfully.")
-        os.remove(input_path)
+        try:
+            os.remove(input_path)
+        except:
+            pass
         return True
 
     except Exception as e:
