@@ -30,8 +30,6 @@ class DirectoryHandler:
             BUNNY_STORAGE_ZONE_REGION
         )
 
-
-
     def get_bunny_objects(self):
         """
         Fetches folders and files from Bunny CDN and saves them to the database.
@@ -132,7 +130,7 @@ def classify_file(file_path):
     """
     filename, extension = os.path.splitext(file_path)
     ext = extension.lower()
-    if re.match(r'\.(jpg|jpeg|png|gif|bmp)$', ext):
+    if re.match(r'\.(jpg|jpeg|png|gif|bmp|JPG)$', ext):
         return "image"
     elif re.match(r'\.(mp4|avi|mov|mkv|wmv)$', ext):
         return "video"
