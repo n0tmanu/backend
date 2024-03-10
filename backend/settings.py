@@ -26,8 +26,6 @@ SECRET_KEY = 'django-insecure-psbs+mn-(topbp!%x&%$4mv9%$42qa85zgh4eb(9j^eebqh(6t
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "159.223.217.120",
-    "localhost", "127.0.0.1",
     "24.144.77.216",
     "165.232.86.201"
 ]
