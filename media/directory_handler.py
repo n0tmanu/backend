@@ -90,37 +90,40 @@ class DirectoryHandler:
         }
 
     def check_thumbnail(self, file, path, thumb_objects):
-
-        if path:
-            storage_path = f"{path}/{file}"
-        else:
-            path = None
-            storage_path = file
-
-        if thumb_objects:
-            for obj in thumb_objects:
-                if "File_Name" in obj and obj['File_Name'] == f"{file}.png":
-                    return True
-
-        print(self.obj_storage.DownloadFile(storage_path=storage_path)["msg"])
-
-        file_type = classify_file(file)
-        if file_type == "video":
-            status = extract_first_frame(video_path=file, output_path=f"{file}.png")
-        elif file_type == "image":
-            status = resize_image(input_path=file, output_path=f"{file}.png")
-        else:
-            os.remove(file)
-            return False
-
-        if status:
-            rp = self.thumb_storage.PutFile(storage_path=f"{storage_path}.png", file_name=f"{file}.png")
-            print(rp['status'], f"{file}.png")
-
         try:
-            os.remove(f"{file}.png")
-        except:
-            pass
+            if path:
+                storage_path = f"{path}/{file}"
+            else:
+                path = None
+                storage_path = file
+
+            if thumb_objects:
+                for obj in thumb_objects:
+                    if "File_Name" in obj and obj['File_Name'] == f"{file}.png":
+                        return True
+
+            print(self.obj_storage.DownloadFile(storage_path=storage_path)["msg"])
+
+            file_type = classify_file(file)
+            if file_type == "video":
+                status = extract_first_frame(video_path=file, output_path=f"{file}.png")
+            elif file_type == "image":
+                status = resize_image(input_path=file, output_path=f"{file}.png")
+            else:
+                os.remove(file)
+                return False
+
+            if status:
+                rp = self.thumb_storage.PutFile(storage_path=f"{storage_path}.png", file_name=f"{file}.png")
+                print(rp['status'], f"{file}.png")
+
+            try:
+                os.remove(f"{file}.png")
+            except:
+                pass
+        except Exception as e:
+            print(e)
+            return False
 
 
 def classify_file(file_path):
