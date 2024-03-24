@@ -16,12 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from authentication.views import login, test_token
+from authentication.views import login, test_token, create_user
 from media.views import media, telegram, update_database, edit_page_source, update_telegram
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', login),
+    path('create/', create_user),
     path('test_token/', test_token),
     path('media/', media),
     path('telegram/', telegram),
