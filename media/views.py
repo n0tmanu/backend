@@ -8,6 +8,8 @@ from backend import settings
 from .models import Folder, Telegram
 from .serializers import FolderSerializer, FileSerializer
 from .telegram_handler import TelegramHandler
+import random
+
 
 # Initialize the DirectoryHandler
 handler = DirectoryHandler(
@@ -29,9 +31,16 @@ pattern = r'(?<=["\'\s])(\/\/[^"\']+\/?)(?=["\'\s])'
 
 # Media view
 def media(request):
+    most_viewed = None
+
     try:
         folder_id = request.GET.get('id')
         folder = Folder.objects.get(pk=folder_id)
+        if folder.name == "media":
+            all_uuids = list(Folder.objects.values_list('pk', flat=True))
+            random_uuids = random.sample(all_uuids, min(20, len(all_uuids)))
+            random_folders = Folder.objects.filter(pk__in=random_uuids)
+            most_viewed = list(FolderSerializer(random_folders, many=True).data)
         child_folders = folder.children.all()
         files = folder.files.all()
 
@@ -39,7 +48,12 @@ def media(request):
         folder_serializer = FolderSerializer(child_folders, many=True)
         file_serializer = FileSerializer(files, many=True)
         content = list(file_serializer.data) + list(folder_serializer.data)
-        return JsonResponse({'content': content})
+        return JsonResponse(
+            {
+                'content': content,
+                'most_viewed': most_viewed
+            }
+        )
     except Folder.DoesNotExist:
         return HttpResponse("File or Folder not found", status=404)
 
