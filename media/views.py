@@ -25,6 +25,7 @@ classes_to_remove = [
     "js-widget_message",
     "tgme_widget_message_footer"
 ]
+
 footer_link_class = "tgme_widget_message_link"
 pattern = r'(?<=["\'\s])(\/\/[^"\']+\/?)(?=["\'\s])'
 
@@ -35,15 +36,23 @@ def media(request):
     all_folders = None
     try:
         folder_id = request.GET.get('id')
+
+        if folder_id == "get-all":
+            all_folders = Folder.objects.exclude(name="media")
+            all_folders = list(FolderSerializer(all_folders, many=True).data)
+
+            return JsonResponse(
+                {
+                    'content': all_folders
+                }
+            )
+
         folder = Folder.objects.get(pk=folder_id)
         if folder.name == "media":
             all_uuids = list(Folder.objects.values_list('pk', flat=True))
             random_uuids = random.sample(all_uuids, min(20, len(all_uuids)))
             random_folders = Folder.objects.filter(pk__in=random_uuids)
             most_viewed = list(FolderSerializer(random_folders, many=True).data)
-
-            all_folders = Folder.objects.exclude(name="media")
-            all_folders = list(FolderSerializer(all_folders, many=True).data)
 
         child_folders = folder.children.all()
         files = folder.files.all()
@@ -54,7 +63,6 @@ def media(request):
         content = list(file_serializer.data) + list(folder_serializer.data)
         return JsonResponse(
             {
-                'all': all_folders,
                 'content': content,
                 'most_viewed': most_viewed
             }
