@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 
+
 class Folder(models.Model):
     # Unique identifier for the folder
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -12,6 +13,7 @@ class Folder(models.Model):
     def __str__(self):
         # String representation of the folder
         return self.name
+
 
 class File(models.Model):
     # Unique identifier for the file
@@ -30,6 +32,7 @@ class File(models.Model):
     def __str__(self):
         # String representation of the file
         return self.name
+
 
 class Telegram(models.Model):
     # Primary key representing the Telegram message ID
