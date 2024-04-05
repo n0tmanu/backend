@@ -46,7 +46,7 @@ def media(request):
             else:
                 context = int(context)
 
-            all_folders = Folder.objects.exclude(name="media")
+            all_folders = Folder.objects.exclude(name="media").order_by('id')
 
             paginator = Paginator(all_folders, 100)  # Set the page size to 100
             folders_page = paginator.page(context // 100 + 1)  # Calculate the page number
