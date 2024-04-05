@@ -39,9 +39,12 @@ def media(request):
         folder_id = request.GET.get('id')
 
         if folder_id == "get-all":
-            context = int(request.GET.get('context'))
+            context = request.GET.get('context')
+
             if not context:
                 context = 0  # Default starting point
+            else:
+                context = int(context)
 
             all_folders = Folder.objects.exclude(name="media")
 
