@@ -1,6 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
+from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .directory_handler import DirectoryHandler
@@ -33,19 +34,26 @@ pattern = r'(?<=["\'\s])(\/\/[^"\']+\/?)(?=["\'\s])'
 # Media view
 def media(request):
     most_viewed = None
-    all_folders = None
+
     try:
         folder_id = request.GET.get('id')
 
         if folder_id == "get-all":
-            all_folders = Folder.objects.exclude(name="media")
-            all_folders = list(FolderSerializer(all_folders, many=True).data)
+            context = int(request.GET.get('context'))
+            if not context:
+                context = 0  # Default starting point
 
-            return JsonResponse(
-                {
-                    'content': all_folders
-                }
-            )
+            all_folders = Folder.objects.exclude(name="media")
+
+            paginator = Paginator(all_folders, 100)  # Set the page size to 100
+            folders_page = paginator.page(context // 100 + 1)  # Calculate the page number
+
+            folders_data = list(FolderSerializer(folders_page.object_list, many=True).data)
+
+            return JsonResponse({
+                'content': folders_data,
+                'next_context': context + 100 if folders_page.has_next() else None  # Provide next context if available
+            })
 
         folder = Folder.objects.get(pk=folder_id)
         if folder.name == "media":
