@@ -6,10 +6,12 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .directory_handler import DirectoryHandler
 from backend import settings
-from .models import Folder, Telegram
+from .models import Folder, Telegram, File
 from .serializers import FolderSerializer, FileSerializer
 from .telegram_handler import TelegramHandler
 import random
+from django.core.paginator import EmptyPage
+from django.db.models import Q
 
 
 # Initialize the DirectoryHandler
@@ -37,49 +39,61 @@ def media(request):
 
     try:
         folder_id = request.GET.get('id')
+        context = request.GET.get('context')
 
-        if folder_id == "get-all":
-            context = request.GET.get('context')
+        if folder_id == 'search':
+            term = context
+            result_folders = Folder.objects.filter(name__icontains=term)
+            result_files = File.objects.filter(name__icontains=term)
+
+            files = FileSerializer(result_files, many=True)
+            folders = FolderSerializer(result_folders, many=True)
+
+            data = list(folders.data) + list(files.data)
+
+            next_context = None
+
+            bread_crumbs = [{
+                "id": "be43dfef-7840-44cf-92f9-151b418c2e1c",
+                "name": "media"
+            }]
+
+        else:
 
             if not context:
                 context = 0  # Default starting point
             else:
                 context = int(context)
 
-            all_folders = Folder.objects.exclude(name="media").order_by('id')
+            folder = Folder.objects.get(pk=folder_id)
+            child_folders = folder.children.all()
+            print(len(child_folders))
+            files = folder.files.all()
 
-            paginator = Paginator(all_folders, 100)  # Set the page size to 100
-            folders_page = paginator.page(context // 100 + 1)  # Calculate the page number
+            file_serializer = FileSerializer(files, many=True)
 
-            folders_data = list(FolderSerializer(folders_page.object_list, many=True).data)
+            paginator = Paginator(folder.children.all(), settings.FOLDER_CONTENT_AMOUNT, allow_empty_first_page=True)  # Set the page size to 100
 
-            return JsonResponse({
-                'content': folders_data,
-                'next_context': context + 100 if folders_page.has_next() else None  # Provide next context if available
-            })
+            bread_crumbs = folder.get_parent_folders()
 
-        folder = Folder.objects.get(pk=folder_id)
-        if folder.name == "media":
-            all_uuids = list(Folder.objects.values_list('pk', flat=True))
-            random_uuids = random.sample(all_uuids, min(20, len(all_uuids)))
-            random_folders = Folder.objects.filter(pk__in=random_uuids)
-            most_viewed = list(FolderSerializer(random_folders, many=True).data)
+            try:
+                folders_page = paginator.page(context // settings.FOLDER_CONTENT_AMOUNT + 1)  # Calculate the page number
+                data = list(FolderSerializer(folders_page.object_list, many=True).data) + list(file_serializer.data)
+                next_context = context + 100 if folders_page.has_next() else None
+            except EmptyPage:
+                return HttpResponse("EndOfFolder", status=404)
+            print(next_context)
 
-        child_folders = folder.children.all()
-        files = folder.files.all()
+        return JsonResponse({
+            'content': data,
+            'next_context': next_context,
+            'bread_crumbs': bread_crumbs
+        })
 
-        # Serialize folders and files
-        folder_serializer = FolderSerializer(child_folders, many=True)
-        file_serializer = FileSerializer(files, many=True)
-        content = list(file_serializer.data) + list(folder_serializer.data)
-        return JsonResponse(
-            {
-                'content': content,
-                'most_viewed': most_viewed
-            }
-        )
     except Folder.DoesNotExist:
         return HttpResponse("File or Folder not found", status=404)
+
+
 
 
 def telegram(request):

@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+from backend import settings
+
 
 
 class Folder(models.Model):
@@ -13,6 +15,32 @@ class Folder(models.Model):
     def __str__(self):
         # String representation of the folder
         return self.name
+
+    def get_parent_folders(self):
+        # Initialize a list to store parent folder data
+        parent_folders_data = []
+
+        # Add the data of the current folder to the list
+        parent_folders_data.append({
+            'id': str(self.id),
+            'name': self.name
+        })
+
+        # Get the parent folder of the current folder
+        parent_folder = self.parent
+
+        # Iterate through parent folders until reaching the root
+        while parent_folder is not None:
+            # Add the parent folder data to the list
+            parent_folders_data.append({
+                'id': str(parent_folder.id),
+                'name': parent_folder.name
+            })
+            # Update the parent folder to its own parent
+            parent_folder = parent_folder.parent
+
+        # Return the list of parent folder data
+        return parent_folders_data[::-1]
 
 
 class File(models.Model):
