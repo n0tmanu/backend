@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from .directory_handler import DirectoryHandler
+from .directory_handler import DirectoryHandler, classify_file
 from backend import settings
 from .models import Folder, Telegram, File
 from .serializers import FolderSerializer, FileSerializer
@@ -148,9 +148,31 @@ def edit_page_source(request):
 
 def update_database(request):
     # Update database with files and folders from Bunny CDN
-    count = handler.get_bunny_objects()
-    return JsonResponse(count, safe=False)
+    name = request.GET.get("name")
+    path = request.GET.get("path")
+    media_url = f"https://silly-media-pull-zone.b-cdn.net/{path}/{name}"
+    thumb_url = f"https://silly-thumb.b-cdn.net/{path}/{name}.png"
+    file_type = classify_file(name)
 
+    folders = path.split("/")
+    
+    parent = Folder.objects.get(id=settings.HOME_FOLDER_KEY)
+
+    for folder in folders:
+        folder, created = Folder.objects.get_or_create(name=folder, parent=parent)
+        parent = folder
+        
+
+    file, created = File.objects.get_or_create(
+            name=name,
+            folder=parent,
+            url=media_url,
+            thumb=thumb_url,
+            type=file_type
+            )    
+    
+    print(file)
+    return JsonResponse({"status": created, "file": file.name})
 
 async def update_telegram(request):
     # Update Telegram messages asynchronously
