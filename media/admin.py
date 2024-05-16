@@ -6,5 +6,5 @@ class FolderAdmin(admin.ModelAdmin):
     search_fields = ['id', 'name']  # Add fields you want to search here
 
 
-admin.site.register(Folder)
+admin.site.register(Folder, FolderAdmin)
 admin.site.register(File)
