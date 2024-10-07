@@ -26,8 +26,8 @@ SECRET_KEY = 'django-insecure-psbs+mn-(topbp!%x&%$4mv9%$42qa85zgh4eb(9j^eebqh(6t
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "24.144.77.216",
-    "165.232.86.201",
+    "nudesksa.com",
+    "165.22.95.203",
     "127.0.0.1"
 ]
 
